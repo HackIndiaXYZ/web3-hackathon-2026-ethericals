@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StyleStore — Demo Merchant (SharpKit)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #fafafa; --text: #111; --muted: #666; --border: #e5e5e5;
+      --accent: #000; --font: 'Inter', system-ui, sans-serif;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+
+    /* NAV */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; height: 56px; background: #fff;
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10;
+    }
+    .nav-logo { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.5px; }
+    .nav-links { display: flex; gap: 2rem; font-size: 0.875rem; color: var(--muted); }
+    .nav-links a { text-decoration: none; color: inherit; transition: color 0.15s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: #000; color: #fff; padding: 0.45rem 1rem;
+      border-radius: 7px; font-size: 0.85rem; font-weight: 600; text-decoration: none;
+    }
+
+    /* BANNER */
+    .banner {
+      background: #000; color: #fff; text-align: center;
+      padding: 10px; font-size: 0.8rem; letter-spacing: 0.3px;
+    }
+    .banner span { color: rgba(255,255,255,0.5); }
+
+    /* HERO */
+    .hero {
+      max-width: 1100px; margin: 0 auto; padding: 4rem 2rem 2rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+    }
+    .hero h1 { font-size: 3rem; font-weight: 800; letter-spacing: -2px; line-height: 1.05; margin-bottom: 1rem; }
+    .hero p { color: var(--muted); font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem; }
+    .hero-btns { display: flex; gap: 0.75rem; }
+    .btn-primary { background: #000; color: #fff; padding: 0.7rem 1.5rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600; text-decoration: none; border: none; cursor: pointer; }
+    .btn-outline { background: transparent; color: #000; padding: 0.7rem 1.5rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600; text-decoration: none; border: 1px solid #ddd; }
+    .hero-img {
+      background: #f0f0f0; border-radius: 16px; aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 5rem; border: 1px solid var(--border);
+    }
+
+    /* SHRP PROMO */
+    .shrp-banner {
+      background: #000; color: #fff; margin: 2rem; border-radius: 12px;
+      padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between;
+    }
+    .shrp-banner h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+    .shrp-banner p { font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+    .shrp-badges { display: flex; gap: 0.5rem; }
+    .shrp-badge {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.8); padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.78rem;
+    }
+
+    /* PRODUCTS */
+    .section { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+    .section-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem; letter-spacing: -0.5px; }
+    .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+    .product-card {
+      background: #fff; border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .product-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    .product-img {
+      background: #f5f5f5; aspect-ratio: 1; display: flex;
+      align-items: center; justify-content: center; font-size: 3rem;
+    }
+    .product-body { padding: 0.75rem; }
+    .product-name { font-size: 0.9rem; font-weight: 600; margin-bottom: 2px; }
+    .product-price { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
+    .product-shrp { font-size: 0.75rem; color: #555; background: #f0f0f0; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 8px; }
+    .product-btn { width: 100%; padding: 7px; background: #000; color: #fff; border: none; border-radius: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .product-btn:hover { background: #222; }
+
+    /* SHRP INFO BOX */
+    .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+    .info-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; }
+    .info-card h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; }
+    .info-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+
+    /* POWERED BY */
+    .powered {
+      text-align: center; padding: 2rem; color: var(--muted); font-size: 0.8rem;
+      border-top: 1px solid var(--border); margin-top: 2rem;
+    }
+    .powered a { color: #000; font-weight: 600; text-decoration: none; }
+
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; gap: 2rem; padding: 2rem 1rem; }
+      .hero h1 { font-size: 2.2rem; }
+      .shrp-banner { flex-direction: column; gap: 1rem; margin: 1rem; }
+      .info-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="banner">
+  <span>Earn SHRP on every purchase —</span> 5 SHRP per ₹100 spent
+</div>
+
+<nav>
+  <div class="nav-logo">StyleStore</div>
+  <div class="nav-links">
+    <a href="#">Women</a>
+    <a href="#">Men</a>
+    <a href="#">Accessories</a>
+    <a href="#">Sale</a>
+  </div>
+  <a href="#" class="nav-cta">Shop Now</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <h1>Wear Bold.<br/>Earn Sharp.</h1>
+    <p>Shop the latest collections and earn Sharp Tokens (SHRP) on every purchase. Redeem for discounts, exclusive drops, and more.</p>
+    <div class="hero-btns">
+      <button class="btn-primary">Shop Collection</button>
+      <a href="#rewards" class="btn-outline">Learn Rewards</a>
+    </div>
+  </div>
+  <div class="hero-img">👗</div>
+</div>
+
+<!-- SHRP PROMO -->
+<div class="shrp-banner">
+  <div>
+    <h3>Earn Sharp Tokens on every order</h3>
+    <p>Powered by SharpKit — the Web3 loyalty layer</p>
+  </div>
+  <div class="shrp-badges">
+    <span class="shrp-badge">5 SHRP / ₹100</span>
+    <span class="shrp-badge">10% off with 500 SHRP</span>
+    <span class="shrp-badge">Use across 4+ stores</span>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<div class="section">
+  <div class="section-title">New Arrivals</div>
+  <div class="products">
+    <div class="product-card">
+      <div class="product-img">👔</div>
+      <div class="product-body">
+        <div class="product-name">Oxford Shirt</div>
+        <div class="product-price">₹1,299</div>
+        <div class="product-shrp">Earn 65 SHRP</div>
+        <button class="product-btn">Add to Cart</button>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img">👟</div>
+      <div class="product-body">
+        <div class="product-name">Canvas Sneakers</div>
+        <div class="product-price">₹2,499</div>
+        <div class="product-shrp">Earn 125 SHRP</div>
+        <button class="product-btn">Add to Cart</button>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img">👜</div>
+      <div class="product-body">
+        <div class="product-name">Leather Tote</div>
+        <div class="product-price">₹3,799</div>
+        <div class="product-shrp">Earn 190 SHRP</div>
+        <button class="product-btn">Add to Cart</button>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img">🕶️</div>
+      <div class="product-body">
+        <div class="product-name">Aviator Shades</div>
+        <div class="product-price">₹899</div>
+        <div class="product-shrp">Earn 45 SHRP</div>
+        <button class="product-btn">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REWARDS INFO -->
+<div class="section" id="rewards">
+  <div class="section-title">How SHRP Rewards Work</div>
+  <div class="info-grid">
+    <div class="info-card">
+      <h4>Earn</h4>
+      <p>Get 5 SHRP for every ₹100 you spend. Tokens are instantly credited to your wallet.</p>
+    </div>
+    <div class="info-card">
+      <h4>Redeem</h4>
+      <p>Use SHRP for discounts, early access to drops, or exclusive member perks.</p>
+    </div>
+    <div class="info-card">
+      <h4>Use Everywhere</h4>
+      <p>SHRP tokens work across all SharpKit partner merchants — earn here, spend anywhere.</p>
+    </div>
+  </div>
+</div>
+
+<div class="powered">
+  Loyalty powered by <a href="http://localhost:4000" target="_blank">SharpKit</a> — Plug-and-play Web3 tokens
+</div>
+
+<!-- SHARPKIT WIDGET -->
+<script
+  src="http://localhost:4000/widget/sharpkit-widget.js"
+  data-key="test_key"
+  data-user-id="user123"
+  data-base-url="http://localhost:4000">
+</script>
+
+</body>
+</html>

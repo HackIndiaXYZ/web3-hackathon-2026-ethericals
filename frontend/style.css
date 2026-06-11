@@ -92,8 +92,21 @@ header {
   color: var(--text-2);
   font-size: 0.8rem;
   font-weight: 400;
+}
+
+.header-nav {
+  display: flex;
+  gap: 1.25rem;
   flex: 1;
 }
+.nav-link {
+  font-size: 0.8rem;
+  color: var(--text-3);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+.nav-link:hover, .nav-link.active { color: var(--text); }
 
 .api-key-bar {
   display: flex;

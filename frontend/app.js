@@ -13,7 +13,8 @@ function headers() {
 function toast(msg, isError = false) {
   const el = document.getElementById("toast");
   el.textContent = msg;
-  el.style.background = isError ? "#ef4444" : "#7c3aed";
+  el.style.background = isError ? "#3a1a1a" : "#fff";
+  el.style.color = isError ? "#ff8080" : "#000";
   el.classList.remove("hidden");
   setTimeout(() => el.classList.add("hidden"), 3000);
 }
