@@ -13,8 +13,8 @@ function headers() {
 function toast(msg, isError = false) {
   const el = document.getElementById("toast");
   el.textContent = msg;
-  el.style.background = isError ? "#3a1a1a" : "#fff";
-  el.style.color = isError ? "#ff8080" : "#000";
+  el.style.background = isError ? "#dc2626" : "#000";
+  el.style.color = "#fff";
   el.classList.remove("hidden");
   setTimeout(() => el.classList.add("hidden"), 3000);
 }
@@ -22,9 +22,58 @@ function toast(msg, isError = false) {
 // ===== SHOW RESULT =====
 function showResult(id, data, isError = false) {
   const el = document.getElementById(id);
-  el.classList.remove("hidden", "success", "error");
-  el.classList.add(isError ? "error" : "success");
-  el.textContent = JSON.stringify(data, null, 2);
+  if (!el) return;
+  el.classList.remove("hidden");
+
+  // Error state
+  if (isError || data?.error) {
+    el.innerHTML = `<div class="result-card error">
+      <div class="result-label">Error</div>
+      <div class="result-row" style="color:var(--error)">${data?.error || "Something went wrong"}</div>
+    </div>`;
+    return;
+  }
+
+  // Balance check: {userId, balance}
+  if (data.balance !== undefined) {
+    el.innerHTML = `<div class="result-card success">
+      <div class="result-amount">${Number(data.balance).toLocaleString()} SHRP</div>
+      <div class="result-label">Balance · ${data.userId}</div>
+    </div>`;
+    return;
+  }
+
+  // Transaction response: {success, tx}
+  const tx = data.tx || {};
+  const isSpend = tx.type === "spend";
+  const lines = [];
+
+  if (tx.newBalance !== undefined)
+    lines.push(`<div class="result-amount">${Number(tx.newBalance).toLocaleString()} SHRP</div>
+      <div class="result-label">New Balance</div>`);
+
+  if (tx.amount !== undefined)
+    lines.push(`<div class="result-row" style="color:${isSpend ? 'var(--spend)' : 'var(--earn)'};font-weight:700;font-size:0.95rem">
+      ${isSpend ? '−' : '+'}${tx.amount} SHRP</div>`);
+
+  if (tx.txHash)
+    lines.push(`<div class="result-row result-label">Tx: <span style="font-family:var(--mono)">${tx.txHash.slice(0,14)}…</span>
+      ${data.sepoliaLink ? `<a href="${data.sepoliaLink}" target="_blank" style="color:var(--balance);margin-left:8px;text-decoration:none">↗ Etherscan</a>` : ''}</div>`);
+
+  if (tx.blockNumber)
+    lines.push(`<div class="result-row result-label">Block #${tx.blockNumber}${tx.verified ? ' · <span style="color:var(--success)">✓ verified</span>' : ''}</div>`);
+
+  if (data.warning)
+    lines.push(`<div class="result-row" style="color:var(--warning);font-size:0.75rem">${data.warning}</div>`);
+
+  el.innerHTML = `<div class="result-card success">${lines.join('') || '<div style="color:var(--success)">Success</div>'}</div>`;
+}
+
+// ===== LOADING HELPER =====
+function setLoading(btn, loading) {
+  if (!btn) return;
+  if (loading) { btn.disabled = true; btn.classList.add("loading"); }
+  else         { btn.disabled = false; btn.classList.remove("loading"); }
 }
 
 // ===== EARN =====
@@ -32,6 +81,8 @@ async function doEarn() {
   const userId = document.getElementById("earnUserId").value.trim();
   const amount = Number(document.getElementById("earnAmount").value);
   const reason = document.getElementById("earnReason").value.trim();
+  const btn = document.querySelector(".earn-btn");
+  setLoading(btn, true);
   try {
     const r = await fetch(`${BASE}/api/earn`, { method: "POST", headers: headers(), body: JSON.stringify({ userId, amount, reason }) });
     const data = await r.json();
@@ -39,6 +90,7 @@ async function doEarn() {
     if (r.ok) { toast(`✅ Rewarded ${amount} SHRP to ${userId}`); loadStats(); loadTxLog(); }
     else toast(data.error, true);
   } catch (e) { showResult("earnResult", { error: e.message }, true); }
+  finally { setLoading(btn, false); }
 }
 
 // ===== SPEND =====
@@ -46,6 +98,8 @@ async function doSpend() {
   const userId = document.getElementById("spendUserId").value.trim();
   const amount = Number(document.getElementById("spendAmount").value);
   const reason = document.getElementById("spendReason").value.trim();
+  const btn = document.querySelector(".spend-btn");
+  setLoading(btn, true);
   try {
     const r = await fetch(`${BASE}/api/spend`, { method: "POST", headers: headers(), body: JSON.stringify({ userId, amount, reason }) });
     const data = await r.json();
@@ -53,25 +107,30 @@ async function doSpend() {
     if (r.ok) { toast(`💸 Spent ${amount} SHRP from ${userId}`); loadStats(); loadTxLog(); }
     else toast(data.error || "Insufficient balance", true);
   } catch (e) { showResult("spendResult", { error: e.message }, true); }
+  finally { setLoading(btn, false); }
 }
 
 // ===== BALANCE =====
 async function doBalance() {
   const userId = document.getElementById("balUserId").value.trim();
+  const btn = document.querySelector(".balance-btn");
+  setLoading(btn, true);
   try {
     const r = await fetch(`${BASE}/api/balance/${userId}`, { headers: headers() });
     const data = await r.json();
     showResult("balResult", data, !r.ok);
   } catch (e) { showResult("balResult", { error: e.message }, true); }
+  finally { setLoading(btn, false); }
 }
 
 // ===== BUY FIAT =====
 async function doBuyFiat() {
   const userId = document.getElementById("buyUserId").value.trim();
   const amount = Number(document.getElementById("buyAmount").value);
-  const resultEl = document.getElementById("buyResult");
-  resultEl.classList.add("hidden");
+  const btn = document.querySelector(".buy-fiat-btn");
+  document.getElementById("buyResult").classList.add("hidden");
   toast("⏳ Processing payment…");
+  setLoading(btn, true);
   try {
     const r = await fetch(`${BASE}/api/buy/mock`, { method: "POST", headers: headers(), body: JSON.stringify({ userId, amount, paymentMethod: "card" }) });
     const data = await r.json();
@@ -79,6 +138,7 @@ async function doBuyFiat() {
     if (r.ok) { toast(`✅ Purchased ${amount} SHRP via card`); loadStats(); loadTxLog(); }
     else toast(data.error, true);
   } catch (e) { showResult("buyResult", { error: e.message }, true); }
+  finally { setLoading(btn, false); }
 }
 
 // ===== BUY CRYPTO (MetaMask) =====
@@ -86,12 +146,14 @@ async function doBuyCrypto() {
   const userId = document.getElementById("buyUserId").value.trim();
   const amount = Number(document.getElementById("buyAmount").value);
   const walletEl = document.getElementById("walletAddress");
+  const btn = document.querySelector(".buy-crypto-btn");
 
   if (!window.ethereum) {
     toast("MetaMask not found. Install MetaMask first.", true);
     return;
   }
 
+  setLoading(btn, true);
   try {
     // Request account
     const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
@@ -134,7 +196,7 @@ async function doBuyCrypto() {
   } catch (e) {
     if (e.code === 4001) toast("Transaction rejected by user", true);
     else showResult("buyResult", { error: e.message }, true);
-  }
+  } finally { setLoading(btn, false); }
 }
 
 // ===== RULES =====
@@ -144,13 +206,13 @@ async function loadRules() {
     const { rules } = await r.json();
     const list = document.getElementById("rulesList");
     list.innerHTML = rules.map(rule => `
-      <div class="rule-row">
-        <span class="rule-name">${rule.name}</span>
-        <span class="rule-event">${rule.event}</span>
-        <span class="rule-reward">+${rule.reward} SHRP</span>
-        <button class="rule-del" onclick="deleteRule('${rule.id}')">✕ Remove</button>
+      <div style="display:flex;align-items:center;gap:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:10px 14px;font-size:0.85rem">
+        <span style="font-weight:600;color:#111827;flex:1">${rule.name}</span>
+        <span style="color:#9ca3af;font-family:monospace;font-size:0.75rem">${rule.event}</span>
+        <span style="font-weight:700;color:#111827;font-family:monospace">+${rule.reward} SHRP</span>
+        <button onclick="deleteRule('${rule.id}')" style="font-size:0.72rem;color:#dc2626;border:1px solid #fecaca;border-radius:999px;padding:2px 10px;cursor:pointer;background:transparent;font-family:inherit;transition:background 0.15s" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">Remove</button>
       </div>
-    `).join("") || '<p class="muted">No rules yet.</p>';
+    `).join("") || '<p style="color:#9ca3af;font-size:0.875rem">No rules yet.</p>';
     document.getElementById("statRules").textContent = rules.length;
   } catch (e) { console.error(e); }
 }
@@ -183,19 +245,28 @@ async function loadTxLog() {
     const wrap = document.getElementById("txTable");
     if (!transactions.length) { wrap.innerHTML = '<p class="muted">No transactions yet.</p>'; return; }
     wrap.innerHTML = `
-      <table>
-        <thead><tr><th>Time</th><th>Type</th><th>User</th><th>Amount</th><th>Reason</th><th>New Balance</th></tr></thead>
+      <table style="width:100%;border-collapse:collapse;font-size:0.82rem">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:0 12px 10px 0;color:#9ca3af;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:500">Time</th>
+            <th style="text-align:left;padding:0 12px 10px 0;color:#9ca3af;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:500">Type</th>
+            <th style="text-align:left;padding:0 12px 10px 0;color:#9ca3af;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:500">User</th>
+            <th style="text-align:left;padding:0 12px 10px 0;color:#9ca3af;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:500">Amount</th>
+            <th style="text-align:left;padding:0 12px 10px 0;color:#9ca3af;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:500">Reason</th>
+            <th style="text-align:left;padding:0 0 10px;color:#9ca3af;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:500">Balance</th>
+          </tr>
+        </thead>
         <tbody>
           ${transactions.map(tx => `
-            <tr>
-              <td>${new Date(tx.timestamp).toLocaleTimeString()}</td>
-              <td><span class="type-pill type-${tx.type}">${tx.type}</span></td>
-              <td>${tx.userId}</td>
-              <td style="color:${tx.type === 'spend' ? 'var(--spend)' : 'var(--earn)'};font-weight:700">
-                ${tx.type === 'spend' ? '-' : '+'}${tx.amount} SHRP
+            <tr style="border-top:1px solid #f3f4f6">
+              <td style="padding:10px 12px 10px 0;color:#9ca3af;font-size:0.75rem">${new Date(tx.timestamp).toLocaleTimeString()}</td>
+              <td style="padding:10px 12px 10px 0"><span class="type-pill type-${tx.type}">${tx.type}</span></td>
+              <td style="padding:10px 12px 10px 0;font-family:monospace;font-size:0.75rem;color:#374151">${tx.userId}</td>
+              <td style="padding:10px 12px 10px 0;font-weight:700;color:${tx.type === 'spend' ? '#dc2626' : '#16a34a'}">
+                ${tx.type === 'spend' ? '−' : '+'}${tx.amount} SHRP
               </td>
-              <td class="muted">${tx.reason || tx.paymentMethod || '—'}</td>
-              <td>${tx.newBalance} SHRP</td>
+              <td style="padding:10px 12px 10px 0;color:#9ca3af;font-size:0.75rem">${tx.reason || tx.paymentMethod || '—'}</td>
+              <td style="padding:10px 0;color:#111827;font-weight:600">${tx.newBalance} SHRP</td>
             </tr>
           `).join("")}
         </tbody>

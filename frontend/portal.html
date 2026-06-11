@@ -6,278 +6,164 @@
   <title>SharpKit — Developer Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        fontFamily: { sans: ['Inter','system-ui','sans-serif'], mono: ['"JetBrains Mono"','monospace'] }
+      }}
+    }
+  </script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #000; --surface: #0c0c0c; --surface2: #141414; --surface3: #1c1c1c;
-      --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.16);
-      --text: #fff; --text2: #a0a0a0; --text3: #555;
-      --font: 'Inter', system-ui, sans-serif; --mono: 'JetBrains Mono', monospace;
-      --radius: 10px;
-    }
-    body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
-    body::before {
-      content:''; position:fixed; inset:0;
-      background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
-      background-size: 28px 28px; animation: drift 18s linear infinite;
-      pointer-events: none; z-index: 0;
-    }
-    @keyframes drift { 0%{background-position:0 0} 100%{background-position:28px 28px} }
-
-    /* NAV */
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      display: flex; align-items: center; gap: 1.5rem;
-      padding: 0 2rem; height: 52px;
-      background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(16px);
-    }
-    .nav-logo { font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
-    .nav-dot { width: 7px; height: 7px; background: #fff; border-radius: 50%; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
-    .nav-links { display: flex; gap: 1.5rem; flex: 1; }
-    .nav-links a {
-      font-size: 0.82rem; color: var(--text3); text-decoration: none;
-      transition: color 0.15s; font-weight: 500;
-    }
-    .nav-links a:hover, .nav-links a.active { color: var(--text); }
-    .nav-badge { font-size: 0.68rem; background: var(--surface3); border: 1px solid var(--border2); color: var(--text2); padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
-
-    /* LAYOUT */
-    .page { max-width: 1100px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; }
-    .page-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 0.25rem; }
-    .page-sub { color: var(--text3); font-size: 0.85rem; margin-bottom: 2rem; }
-
-    /* SECTION */
-    .section { margin-bottom: 2rem; }
-    .section-label {
-      font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px;
-      color: var(--text3); font-weight: 600; margin-bottom: 0.75rem;
-    }
-
-    /* CARD */
-    .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 1.25rem;
-      transition: border-color 0.2s;
-    }
-    .card:hover { border-color: var(--border2); }
-    .card + .card { margin-top: 0.75rem; }
-
-    /* STAT GRID */
-    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
-    .stat-block { background: var(--surface); padding: 1.25rem 1.5rem; }
-    .stat-lbl { font-size: 0.68rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500; }
-    .stat-val { font-size: 2rem; font-weight: 800; color: var(--text); letter-spacing: -1.5px; margin-top: 4px; }
-
-    /* API KEY */
-    .key-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
-    .key-display {
-      flex: 1; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 7px; padding: 0.6rem 1rem;
-      font-family: var(--mono); font-size: 0.82rem; color: var(--text2);
-      min-width: 200px;
-    }
-    .btn { padding: 0.55rem 1rem; border-radius: 7px; font-size: 0.82rem; font-weight: 600; font-family: var(--font); cursor: pointer; transition: all 0.15s; }
-    .btn-white  { background: #fff; color: #000; border: none; }
-    .btn-white:hover { background: #e5e5e5; }
-    .btn-ghost  { background: transparent; color: var(--text); border: 1px solid var(--border2); }
-    .btn-ghost:hover { background: var(--surface3); }
-    .btn-danger { background: transparent; color: #ff8080; border: 1px solid rgba(255,80,80,0.3); }
-    .btn-danger:hover { background: rgba(255,80,80,0.08); }
-    .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.75rem; }
-
-    /* CHART */
-    .chart-wrap { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin-top: 0.75rem; }
-    .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .bar { width: 100%; background: rgba(255,255,255,0.12); border-radius: 3px 3px 0 0; transition: background 0.15s; min-height: 2px; }
-    .bar:hover { background: rgba(255,255,255,0.3); }
-    .bar-label { font-size: 9px; color: var(--text3); }
-
-    /* KEYS TABLE */
-    .keys-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 0.75rem; }
-    .keys-table th { text-align: left; padding: 0.5rem 0.75rem; color: var(--text3); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border); font-weight: 500; }
-    .keys-table td { padding: 0.6rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.03); color: var(--text2); vertical-align: middle; }
-    .keys-table tr:last-child td { border-bottom: none; }
-    .active-badge { display: inline-block; padding: 2px 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; font-size: 0.7rem; color: #aaa; font-family: var(--mono); }
-    .revoked-badge { display: inline-block; padding: 2px 8px; background: rgba(255,80,80,0.08); border: 1px solid rgba(255,80,80,0.2); border-radius: 4px; font-size: 0.7rem; color: #ff8080; font-family: var(--mono); }
-
-    /* WEBHOOKS */
-    .webhook-form { display: flex; gap: 0.5rem; align-items: flex-end; margin-bottom: 1rem; flex-wrap: wrap; }
-    .webhook-form input, .playground-input {
-      background: var(--surface2); border: 1px solid var(--border);
-      color: var(--text); padding: 0.55rem 0.85rem; border-radius: 7px;
-      font-size: 0.85rem; font-family: var(--font); outline: none;
-      transition: border-color 0.2s;
-    }
-    .webhook-form input:focus, .playground-input:focus { border-color: var(--border2); }
-    .webhook-url { flex: 1; min-width: 220px; }
-    .event-checks { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
-    .event-check { display: flex; align-items: center; gap: 4px; font-size: 0.78rem; color: var(--text2); cursor: pointer; }
-    .webhook-row {
-      display: flex; align-items: center; gap: 1rem;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 7px; padding: 0.65rem 1rem; font-size: 0.82rem; margin-bottom: 0.4rem;
-    }
-    .webhook-url-text { font-family: var(--mono); font-size: 0.78rem; flex: 1; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .event-tags { display: flex; gap: 0.25rem; }
-    .event-tag { background: var(--surface3); border: 1px solid var(--border); color: var(--text3); padding: 1px 6px; border-radius: 3px; font-size: 0.68rem; font-family: var(--mono); }
-
-    /* LOG */
-    .log-row {
-      display: flex; align-items: center; gap: 1rem;
-      padding: 0.55rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
-      font-size: 0.78rem;
-    }
-    .log-row:last-child { border-bottom: none; }
-    .log-status { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .log-status.ok  { background: #aaa; }
-    .log-status.err { background: #ff8080; }
-    .log-url { color: var(--text3); font-family: var(--mono); font-size: 0.72rem; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .log-event { color: var(--text2); font-family: var(--mono); font-size: 0.72rem; }
-    .log-code { color: var(--text3); font-family: var(--mono); font-size: 0.72px; }
-    .log-time { color: var(--text3); font-size: 0.7rem; white-space: nowrap; }
-
-    /* PLAYGROUND */
-    .playground-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .playground-label { font-size: 0.72rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; font-weight: 500; }
-    .playground-input { width: 100%; margin-bottom: 0.75rem; }
-    textarea.playground-input { height: 120px; resize: vertical; font-family: var(--mono); font-size: 0.8rem; }
-    .playground-response {
-      background: var(--surface2); border: 1px solid var(--border); border-radius: 7px;
-      padding: 1rem; font-family: var(--mono); font-size: 0.78rem; color: var(--text2);
-      white-space: pre-wrap; word-break: break-all; min-height: 120px; line-height: 1.6;
-    }
-    .method-select {
-      background: var(--surface2); border: 1px solid var(--border); color: var(--text);
-      padding: 0.55rem 0.85rem; border-radius: 7px; font-size: 0.85rem;
-      font-family: var(--font); outline: none; margin-bottom: 0.75rem;
-    }
-
-    /* TOP USERS */
-    .top-user-row { display: flex; align-items: center; justify-content: space-between; padding: 0.55rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; }
-    .top-user-row:last-child { border-bottom: none; }
-    .top-user-name { color: var(--text2); font-family: var(--mono); }
-    .top-user-bal { font-weight: 700; color: var(--text); font-family: var(--mono); }
-
-    .muted { color: var(--text3); font-size: 0.82rem; }
-    input[type="text"] { color: var(--text); }
-
-    @media (max-width: 768px) {
-      .stat-grid { grid-template-columns: 1fr 1fr; }
-      .playground-grid { grid-template-columns: 1fr; }
-      .key-row { flex-direction: column; align-items: flex-start; }
-    }
+    .hidden { display: none !important; }
+    .bar { transition: height 0.3s ease; border-radius: 4px 4px 0 0; }
+    .bar:hover { opacity: 0.8; }
   </style>
 </head>
-<body>
+<body class="bg-white text-gray-900 font-sans min-h-screen">
 
-<nav>
-  <div class="nav-logo"><span class="nav-dot"></span> SharpKit</div>
-  <div class="nav-links">
-    <a href="/">Dashboard</a>
-    <a href="/portal.html" class="active">Portal</a>
-    <a href="/marketplace.html">Marketplace</a>
-    <a href="/demo.html">Demo</a>
+<!-- HEADER -->
+<header class="bg-black text-white sticky top-0 z-50 border-b border-white/10">
+  <div class="max-w-6xl mx-auto px-6 h-14 flex items-center gap-5">
+    <div class="flex items-center gap-2 font-extrabold text-sm tracking-tight shrink-0">
+      <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+      SharpKit
+    </div>
+    <nav class="flex gap-5 flex-1">
+      <a href="/" class="text-xs font-medium text-gray-500 hover:text-white transition-colors">Dashboard</a>
+      <a href="/portal.html" class="text-xs font-semibold text-white">Portal</a>
+      <a href="/marketplace.html" class="text-xs font-medium text-gray-500 hover:text-white transition-colors">Marketplace</a>
+      <a href="/demo.html" class="text-xs font-medium text-gray-500 hover:text-white transition-colors">Demo</a>
+    </nav>
+    <span class="bg-white/10 border border-white/20 text-gray-300 text-xs px-2.5 py-0.5 rounded-full font-mono" id="nav-version">v2.0.0</span>
   </div>
-  <span class="nav-badge" id="nav-version">v2.0.0</span>
-</nav>
+</header>
 
-<div class="page">
-  <div class="page-title">Developer Portal</div>
-  <div class="page-sub">Manage API keys, monitor usage, configure webhooks</div>
+<div class="max-w-6xl mx-auto px-6 py-8">
+
+  <!-- PAGE TITLE -->
+  <div class="sr mb-8">
+    <h1 class="text-2xl font-extrabold tracking-tight mb-1">Developer Portal</h1>
+    <p class="text-gray-400 text-sm">Manage API keys, monitor usage, configure webhooks</p>
+  </div>
 
   <!-- STATS -->
-  <div class="section">
-    <div class="section-label">Live Overview</div>
-    <div class="stat-grid">
-      <div class="stat-block"><div class="stat-lbl">Total Users</div><div class="stat-val" id="p-users">—</div></div>
-      <div class="stat-block"><div class="stat-lbl">SHRP Issued</div><div class="stat-val" id="p-shrp">—</div></div>
-      <div class="stat-block"><div class="stat-lbl">Transactions</div><div class="stat-val" id="p-txs">—</div></div>
-      <div class="stat-block"><div class="stat-lbl">Active Keys</div><div class="stat-val" id="p-keys">—</div></div>
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8 sr-group">
+    <div class="bg-gray-50 border border-gray-100 rounded-3xl px-5 py-4">
+      <div class="text-xs text-gray-400 uppercase tracking-widest font-medium mb-1">Total Users</div>
+      <div class="text-3xl font-extrabold tracking-tight" id="p-users">—</div>
+    </div>
+    <div class="bg-gray-50 border border-gray-100 rounded-3xl px-5 py-4">
+      <div class="text-xs text-gray-400 uppercase tracking-widest font-medium mb-1">SHRP Issued</div>
+      <div class="text-3xl font-extrabold tracking-tight" id="p-shrp">—</div>
+    </div>
+    <div class="bg-gray-50 border border-gray-100 rounded-3xl px-5 py-4">
+      <div class="text-xs text-gray-400 uppercase tracking-widest font-medium mb-1">Transactions</div>
+      <div class="text-3xl font-extrabold tracking-tight" id="p-txs">—</div>
+    </div>
+    <div class="bg-gray-50 border border-gray-100 rounded-3xl px-5 py-4">
+      <div class="text-xs text-gray-400 uppercase tracking-widest font-medium mb-1">Active Keys</div>
+      <div class="text-3xl font-extrabold tracking-tight" id="p-keys">—</div>
     </div>
   </div>
 
-  <!-- TX VOLUME CHART -->
-  <div class="section">
-    <div class="section-label">Transaction Volume — Last 7 Days</div>
-    <div class="card">
-      <div id="chart-wrap" class="chart-wrap"></div>
+  <!-- TX VOLUME CHART + TOP USERS -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+    <div class="sr lg:col-span-2 bg-white border border-gray-100 rounded-3xl shadow-sm p-5">
+      <div class="text-xs text-gray-400 uppercase tracking-widest font-medium mb-4">Transaction Volume — Last 7 Days</div>
+      <div id="chart-wrap" class="flex items-end gap-2 h-20"></div>
     </div>
-  </div>
-
-  <!-- TOP USERS -->
-  <div class="section">
-    <div class="section-label">Top Users by Balance</div>
-    <div class="card">
-      <div id="top-users"></div>
+    <div class="sr sr-d1 bg-white border border-gray-100 rounded-3xl shadow-sm p-5">
+      <div class="text-xs text-gray-400 uppercase tracking-widest font-medium mb-4">Top Users by Balance</div>
+      <div id="top-users"><p class="text-sm text-gray-400">Loading…</p></div>
     </div>
   </div>
 
   <!-- API KEYS -->
-  <div class="section">
-    <div class="section-label">API Keys</div>
-    <div class="card">
-      <div class="key-row" style="margin-bottom:1rem">
-        <input type="text" id="new-key-name" class="key-display" placeholder="Key name (e.g. Production)"/>
-        <button class="btn btn-white" onclick="generateKey()">Generate Key</button>
+  <div class="sr bg-white border border-gray-100 rounded-3xl shadow-sm mb-4 overflow-hidden">
+    <div class="px-5 pt-5 pb-4 border-b border-gray-100">
+      <h2 class="font-bold text-sm">API Keys</h2>
+    </div>
+    <div class="px-5 py-4">
+      <div class="flex gap-2 mb-4">
+        <input type="text" id="new-key-name" placeholder="Key name (e.g. Production)"
+          class="flex-1 bg-gray-50 border border-gray-200 px-3 py-2 rounded-2xl text-sm outline-none focus:border-gray-400 transition-colors min-w-0"/>
+        <button onclick="generateKey()" class="bg-black text-white font-semibold text-sm px-4 py-2 rounded-full hover:bg-gray-800 transition-colors shrink-0">Generate Key</button>
       </div>
-      <table class="keys-table" id="keys-table">
-        <thead><tr><th>Name</th><th>Key</th><th>Created</th><th>Status</th><th></th></tr></thead>
-        <tbody id="keys-tbody"><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
+      <table class="w-full text-sm">
+        <thead>
+          <tr>
+            <th class="text-left text-xs text-gray-400 uppercase tracking-widest font-medium pb-3 pr-4">Name</th>
+            <th class="text-left text-xs text-gray-400 uppercase tracking-widest font-medium pb-3 pr-4">Key</th>
+            <th class="text-left text-xs text-gray-400 uppercase tracking-widest font-medium pb-3 pr-4">Created</th>
+            <th class="text-left text-xs text-gray-400 uppercase tracking-widest font-medium pb-3 pr-4">Status</th>
+            <th class="pb-3"></th>
+          </tr>
+        </thead>
+        <tbody id="keys-tbody">
+          <tr><td colspan="5" class="text-gray-400 text-sm py-2">Loading…</td></tr>
+        </tbody>
       </table>
     </div>
   </div>
 
   <!-- WEBHOOKS -->
-  <div class="section">
-    <div class="section-label">Webhooks</div>
-    <div class="card">
-      <div class="webhook-form">
-        <input type="text" class="webhook-url" id="wh-url" placeholder="https://your-server.com/webhook"/>
-        <div class="event-checks">
-          <label class="event-check"><input type="checkbox" value="earn" checked> earn</label>
-          <label class="event-check"><input type="checkbox" value="spend" checked> spend</label>
-          <label class="event-check"><input type="checkbox" value="buy_fiat"> buy_fiat</label>
-          <label class="event-check"><input type="checkbox" value="buy_crypto"> buy_crypto</label>
+  <div class="sr bg-white border border-gray-100 rounded-3xl shadow-sm mb-4 overflow-hidden">
+    <div class="px-5 pt-5 pb-4 border-b border-gray-100">
+      <h2 class="font-bold text-sm">Webhooks</h2>
+    </div>
+    <div class="px-5 py-4">
+      <div class="flex flex-wrap gap-2 mb-4 items-center">
+        <input type="text" id="wh-url" placeholder="https://your-server.com/webhook"
+          class="flex-1 min-w-48 bg-gray-50 border border-gray-200 px-3 py-2 rounded-2xl text-sm outline-none focus:border-gray-400 transition-colors"/>
+        <div class="flex gap-3 text-sm text-gray-600 flex-wrap">
+          <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" value="earn" checked class="rounded"> earn</label>
+          <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" value="spend" checked class="rounded"> spend</label>
+          <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" value="buy_fiat" class="rounded"> buy_fiat</label>
+          <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" value="buy_crypto" class="rounded"> buy_crypto</label>
         </div>
-        <button class="btn btn-white" onclick="addWebhook()">Add Webhook</button>
+        <button onclick="addWebhook()" class="bg-black text-white font-semibold text-sm px-4 py-2 rounded-full hover:bg-gray-800 transition-colors shrink-0">Add Webhook</button>
       </div>
-      <div id="webhooks-list"><p class="muted">No webhooks registered.</p></div>
+      <div id="webhooks-list"><p class="text-sm text-gray-400">No webhooks registered.</p></div>
     </div>
   </div>
 
   <!-- WEBHOOK LOGS -->
-  <div class="section">
-    <div class="section-label">Recent Webhook Fires</div>
-    <div class="card">
-      <div id="webhook-logs"><p class="muted">No logs yet.</p></div>
+  <div class="sr bg-white border border-gray-100 rounded-3xl shadow-sm mb-4 overflow-hidden">
+    <div class="px-5 pt-5 pb-4 border-b border-gray-100">
+      <h2 class="font-bold text-sm">Recent Webhook Fires</h2>
+    </div>
+    <div class="px-5 py-4">
+      <div id="webhook-logs"><p class="text-sm text-gray-400">No logs yet.</p></div>
     </div>
   </div>
 
-  <!-- LIVE PLAYGROUND -->
-  <div class="section">
-    <div class="section-label">Live API Playground</div>
-    <div class="card">
-      <div class="playground-grid">
-        <div>
-          <div class="playground-label">Endpoint</div>
-          <select class="method-select" id="pg-endpoint" onchange="updatePlayground()">
-            <option value="/api/earn">POST /api/earn</option>
-            <option value="/api/spend">POST /api/spend</option>
-            <option value="/api/balance">GET /api/balance/:userId</option>
-            <option value="/api/buy/mock">POST /api/buy/mock</option>
-          </select>
-          <div class="playground-label">API Key</div>
-          <input type="text" class="playground-input" id="pg-key" value="test_key"/>
-          <div class="playground-label">Request Body</div>
-          <textarea class="playground-input" id="pg-body">{"userId":"user123","amount":50,"reason":"daily_login"}</textarea>
-          <button class="btn btn-white" onclick="runPlayground()" style="width:100%">Send Request</button>
-        </div>
-        <div>
-          <div class="playground-label">Response</div>
-          <div class="playground-response" id="pg-response">// Response will appear here</div>
-        </div>
+  <!-- PLAYGROUND -->
+  <div class="sr bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
+    <div class="px-5 pt-5 pb-4 border-b border-gray-100">
+      <h2 class="font-bold text-sm">Live API Playground</h2>
+    </div>
+    <div class="px-5 py-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div>
+        <div class="text-xs text-gray-400 uppercase tracking-widest font-medium mb-1.5">Endpoint</div>
+        <select id="pg-endpoint" onchange="updatePlayground()"
+          class="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-2xl text-sm outline-none focus:border-gray-400 mb-3">
+          <option value="/api/earn">POST /api/earn</option>
+          <option value="/api/spend">POST /api/spend</option>
+          <option value="/api/balance">GET /api/balance/:userId</option>
+          <option value="/api/buy/mock">POST /api/buy/mock</option>
+        </select>
+        <div class="text-xs text-gray-400 uppercase tracking-widest font-medium mb-1.5">API Key</div>
+        <input type="text" id="pg-key" value="test_key"
+          class="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-2xl text-sm font-mono outline-none focus:border-gray-400 mb-3"/>
+        <div class="text-xs text-gray-400 uppercase tracking-widest font-medium mb-1.5">Request Body</div>
+        <textarea id="pg-body" rows="4"
+          class="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-2xl text-sm font-mono outline-none focus:border-gray-400 resize-none mb-3">{"userId":"user123","amount":50,"reason":"daily_login"}</textarea>
+        <button onclick="runPlayground()" class="w-full bg-black text-white font-semibold text-sm py-2.5 rounded-full hover:bg-gray-800 transition-colors">Send Request</button>
+      </div>
+      <div>
+        <div class="text-xs text-gray-400 uppercase tracking-widest font-medium mb-1.5">Response</div>
+        <pre id="pg-response" class="bg-gray-950 text-gray-300 rounded-2xl p-4 text-xs font-mono min-h-48 overflow-auto leading-relaxed">// Response will appear here</pre>
       </div>
     </div>
   </div>
@@ -288,63 +174,63 @@
   const BASE = "http://localhost:4000";
   function h(key) { return { "Content-Type": "application/json", "x-api-key": key || "test_key" }; }
 
-  // ── Analytics ──────────────────────────────────────────────────────────────
   async function loadAnalytics() {
     try {
       const r = await fetch(`${BASE}/api/analytics`, { headers: h() });
       const d = await r.json();
       document.getElementById("p-users").textContent = d.totalUsers;
-      document.getElementById("p-shrp").textContent  = d.totalShrp.toLocaleString();
+      document.getElementById("p-shrp").textContent  = d.totalShrp?.toLocaleString() ?? "—";
       document.getElementById("p-txs").textContent   = d.totalTxs;
 
-      // Chart
       const days = [];
       for (let i = 6; i >= 0; i--) {
         const dt = new Date(); dt.setDate(dt.getDate() - i);
         days.push(dt.toISOString().slice(0, 10));
       }
-      const max = Math.max(...days.map(d2 => d.byDay[d2] || 0), 1);
-      const wrap = document.getElementById("chart-wrap");
-      wrap.innerHTML = days.map(day => {
-        const count = d.byDay[day] || 0;
-        const h2    = Math.round((count / max) * 72) + 2;
-        const lbl   = day.slice(5);
-        return `<div class="bar-group"><div class="bar" style="height:${h2}px" title="${count} txs on ${day}"></div><div class="bar-label">${lbl}</div></div>`;
+      const max = Math.max(...days.map(d2 => d.byDay?.[d2] || 0), 1);
+      document.getElementById("chart-wrap").innerHTML = days.map(day => {
+        const count = d.byDay?.[day] || 0;
+        const h2 = Math.round((count / max) * 72) + 4;
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div class="bar bg-gray-900 w-full" style="height:${h2}px" title="${count} txs"></div>
+          <div style="font-size:9px;color:#9ca3af">${day.slice(5)}</div>
+        </div>`;
       }).join("");
 
-      // Top users
-      document.getElementById("top-users").innerHTML = d.topUsers.length
+      document.getElementById("top-users").innerHTML = d.topUsers?.length
         ? d.topUsers.map((u, i) => `
-            <div class="top-user-row">
-              <span style="color:var(--text3);font-size:.75rem;margin-right:.5rem">${i + 1}</span>
-              <span class="top-user-name">${u.userId}</span>
-              <span class="top-user-bal">${u.balance.toLocaleString()} SHRP</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:0.85rem">
+              <span style="color:#9ca3af;font-size:0.75rem;margin-right:8px">${i+1}</span>
+              <span style="font-family:monospace;font-size:0.78rem;color:#374151;flex:1">${u.userId}</span>
+              <span style="font-weight:700;font-family:monospace">${u.balance?.toLocaleString()} SHRP</span>
             </div>`).join("")
-        : '<p class="muted">No users yet.</p>';
-
+        : '<p style="color:#9ca3af;font-size:0.875rem">No users yet.</p>';
     } catch { document.getElementById("p-users").textContent = "—"; }
   }
 
-  // ── Keys ───────────────────────────────────────────────────────────────────
   async function loadKeys() {
     try {
       const r = await fetch(`${BASE}/api/keys`, { headers: h() });
       const { keys } = await r.json();
       document.getElementById("p-keys").textContent = keys.filter(k => k.active).length;
       document.getElementById("keys-tbody").innerHTML = keys.map(k => `
-        <tr>
-          <td style="color:var(--text)">${k.name}</td>
-          <td><span style="font-family:var(--mono);font-size:.78rem">${k.fullKey}</span></td>
-          <td style="color:var(--text3)">${new Date(k.createdAt).toLocaleDateString()}</td>
-          <td>${k.active ? '<span class="active-badge">active</span>' : '<span class="revoked-badge">revoked</span>'}</td>
-          <td>${k.active ? `<button class="btn btn-danger btn-sm" onclick="revokeKey('${k.fullKey}')">Revoke</button>` : ''}</td>
+        <tr style="border-top:1px solid #f3f4f6">
+          <td style="padding:10px 12px 10px 0;font-weight:600">${k.name}</td>
+          <td style="padding:10px 12px 10px 0;font-family:monospace;font-size:0.75rem;color:#6b7280">${k.fullKey}</td>
+          <td style="padding:10px 12px 10px 0;color:#9ca3af;font-size:0.78rem">${new Date(k.createdAt).toLocaleDateString()}</td>
+          <td style="padding:10px 12px 10px 0">
+            ${k.active
+              ? '<span style="background:#dcfce7;color:#15803d;border-radius:999px;padding:2px 10px;font-size:0.68rem;font-weight:600;font-family:monospace">active</span>'
+              : '<span style="background:#fee2e2;color:#b91c1c;border-radius:999px;padding:2px 10px;font-size:0.68rem;font-weight:600;font-family:monospace">revoked</span>'}
+          </td>
+          <td style="padding:10px 0">${k.active ? `<button onclick="revokeKey('${k.fullKey}')" style="font-size:0.72rem;color:#dc2626;border:1px solid #fecaca;border-radius:999px;padding:2px 10px;cursor:pointer;background:transparent;font-family:inherit">Revoke</button>` : ''}</td>
         </tr>`).join("");
     } catch {}
   }
 
   async function generateKey() {
     const name = document.getElementById("new-key-name").value.trim();
-    if (!name) { alert("Enter a key name"); return; }
+    if (!name) return;
     const r = await fetch(`${BASE}/api/keys`, { method: "POST", headers: h(), body: JSON.stringify({ name }) });
     if (r.ok) { document.getElementById("new-key-name").value = ""; loadKeys(); }
   }
@@ -355,20 +241,18 @@
     loadKeys();
   }
 
-  // ── Webhooks ───────────────────────────────────────────────────────────────
   async function loadWebhooks() {
     try {
       const r = await fetch(`${BASE}/api/webhooks`, { headers: h() });
       const { webhooks } = await r.json();
-      const el = document.getElementById("webhooks-list");
-      el.innerHTML = webhooks.length
+      document.getElementById("webhooks-list").innerHTML = webhooks.length
         ? webhooks.map(wh => `
-            <div class="webhook-row">
-              <span class="webhook-url-text">${wh.url}</span>
-              <div class="event-tags">${wh.events.map(e => `<span class="event-tag">${e}</span>`).join("")}</div>
-              <button class="btn btn-danger btn-sm" onclick="deleteWebhook('${wh.id}')">Remove</button>
+            <div style="display:flex;align-items:center;gap:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:10px 14px;font-size:0.82rem;margin-bottom:6px">
+              <span style="font-family:monospace;font-size:0.75rem;color:#6b7280;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${wh.url}</span>
+              <div style="display:flex;gap:4px">${wh.events.map(e => `<span style="background:#e5e7eb;color:#374151;border-radius:4px;padding:1px 6px;font-size:0.65rem;font-family:monospace">${e}</span>`).join("")}</div>
+              <button onclick="deleteWebhook('${wh.id}')" style="font-size:0.72rem;color:#dc2626;border:1px solid #fecaca;border-radius:999px;padding:2px 10px;cursor:pointer;background:transparent;font-family:inherit">Remove</button>
             </div>`).join("")
-        : '<p class="muted">No webhooks registered.</p>';
+        : '<p style="color:#9ca3af;font-size:0.875rem">No webhooks registered.</p>';
     } catch {}
   }
 
@@ -376,27 +260,25 @@
     try {
       const r = await fetch(`${BASE}/api/webhooks/logs?limit=10`, { headers: h() });
       const { logs } = await r.json();
-      const el = document.getElementById("webhook-logs");
-      el.innerHTML = logs.length
+      document.getElementById("webhook-logs").innerHTML = logs.length
         ? logs.map(l => `
-            <div class="log-row">
-              <div class="log-status ${l.success ? 'ok' : 'err'}"></div>
-              <span class="log-event">${l.event}</span>
-              <span class="log-url">${l.url}</span>
-              <span style="color:var(--text3);font-family:var(--mono);font-size:.72rem">${l.status || 'err'}</span>
-              <span class="log-time">${new Date(l.firedAt).toLocaleTimeString()}</span>
+            <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:0.78rem">
+              <div style="width:7px;height:7px;border-radius:50%;background:${l.success ? '#16a34a' : '#dc2626'};flex-shrink:0"></div>
+              <span style="font-family:monospace;font-size:0.72rem;color:#374151">${l.event}</span>
+              <span style="font-family:monospace;font-size:0.72rem;color:#9ca3af;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.url}</span>
+              <span style="font-family:monospace;font-size:0.72rem;color:#9ca3af">${l.status || 'err'}</span>
+              <span style="font-size:0.7rem;color:#9ca3af;white-space:nowrap">${new Date(l.firedAt).toLocaleTimeString()}</span>
             </div>`).join("")
-        : '<p class="muted">No webhook fires yet.</p>';
+        : '<p style="color:#9ca3af;font-size:0.875rem">No webhook fires yet.</p>';
     } catch {}
   }
 
   async function addWebhook() {
     const url = document.getElementById("wh-url").value.trim();
-    if (!url) { alert("Enter a URL"); return; }
+    if (!url) return;
     const events = Array.from(document.querySelectorAll(".event-check input:checked")).map(c => c.value);
     const r = await fetch(`${BASE}/api/webhooks`, { method: "POST", headers: h(), body: JSON.stringify({ url, events }) });
     if (r.ok) { document.getElementById("wh-url").value = ""; loadWebhooks(); }
-    else { const d = await r.json(); alert(d.error); }
   }
 
   async function deleteWebhook(id) {
@@ -404,47 +286,41 @@
     loadWebhooks();
   }
 
-  // ── Playground ─────────────────────────────────────────────────────────────
   function updatePlayground() {
     const ep = document.getElementById("pg-endpoint").value;
     const bodies = {
       "/api/earn":     '{"userId":"user123","amount":50,"reason":"daily_login"}',
       "/api/spend":    '{"userId":"user123","amount":20,"reason":"redeem_discount"}',
-      "/api/balance":  null,
+      "/api/balance":  '{"userId":"user123"}',
       "/api/buy/mock": '{"userId":"user123","amount":100,"paymentMethod":"card"}',
     };
     document.getElementById("pg-body").value = bodies[ep] || "";
   }
 
   async function runPlayground() {
-    const ep  = document.getElementById("pg-endpoint").value;
+    const ep = document.getElementById("pg-endpoint").value;
     const key = document.getElementById("pg-key").value.trim() || "test_key";
     const bodyStr = document.getElementById("pg-body").value.trim();
     const resEl = document.getElementById("pg-response");
     resEl.textContent = "Loading…";
     try {
-      let url = `${BASE}${ep}`;
-      let opts = { headers: h(key) };
+      let url = `${BASE}${ep}`, opts = { headers: h(key) };
       if (ep === "/api/balance") {
         const uid = bodyStr ? JSON.parse(bodyStr).userId : "user123";
-        url = `${BASE}/api/balance/${uid}`;
-        opts.method = "GET";
-      } else {
-        opts.method = "POST";
-        opts.body = bodyStr;
-      }
-      const r   = await fetch(url, opts);
-      const d   = await r.json();
+        url = `${BASE}/api/balance/${uid}`; opts.method = "GET";
+      } else { opts.method = "POST"; opts.body = bodyStr; }
+      const r = await fetch(url, opts);
+      const d = await r.json();
       resEl.textContent = JSON.stringify(d, null, 2);
     } catch (e) { resEl.textContent = "Error: " + e.message; }
   }
 
-  // ── Init ───────────────────────────────────────────────────────────────────
   async function init() {
     await Promise.all([loadAnalytics(), loadKeys(), loadWebhooks(), loadWebhookLogs()]);
   }
   init();
   setInterval(init, 15000);
 </script>
+<script src="scroll.js"></script>
 </body>
 </html>
