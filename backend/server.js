@@ -62,13 +62,51 @@ app.get("/api/analytics", requireApiKey, (req, res) => res.json(getAnalytics()))
 // ─── Health ────────────────────────────────────────────────────────────────
 app.get("/api/health", (req, res) => res.json({ status: "ok", version: "2.0.0" }));
 
-// ─── Static — SDK, widget, frontend ────────────────────────────────────────
+// ─── Static — SDK, widget, frontend client assets ──────────────────────────
 app.use("/sdk",    express.static(path.join(__dirname, "../sdk")));
 app.use("/widget", express.static(path.join(__dirname, "../widget")));
-app.use(express.static(path.join(__dirname, "../frontend")));
+app.use(express.static(path.join(__dirname, "../frontend/dist/client")));
 
-// ─── Fallback ──────────────────────────────────────────────────────────────
-app.get("*", (req, res) => res.sendFile(path.join(__dirname, "../frontend/index.html")));
+// ─── SSR Fallback — forwards non-API requests to TanStack Start SSR handler ─
+let _ssrHandler = null;
+async function getSSRHandler() {
+  if (_ssrHandler) return _ssrHandler;
+  try {
+    const mod = await import(path.join(__dirname, "../frontend/dist/server/server.js"));
+    _ssrHandler = mod.default;
+    return _ssrHandler;
+  } catch {
+    return null;
+  }
+}
+
+app.get("*", async (req, res) => {
+  const handler = await getSSRHandler();
+  if (!handler) {
+    return res.status(503).send(
+      "Frontend not built. Run: cd frontend && npm run build"
+    );
+  }
+  try {
+    const protocol = req.protocol || "http";
+    const host     = req.headers.host || `localhost:${process.env.PORT || 4000}`;
+    const webReq   = new Request(`${protocol}://${host}${req.url}`, {
+      method: req.method,
+      headers: Object.fromEntries(
+        Object.entries(req.headers).filter(([, v]) => v != null)
+      ),
+    });
+    const webRes = await handler.fetch(webReq);
+    res.status(webRes.status);
+    for (const [key, value] of webRes.headers.entries()) {
+      res.setHeader(key, value);
+    }
+    res.send(Buffer.from(await webRes.arrayBuffer()));
+  } catch (err) {
+    console.error("[SSR]", err.message);
+    res.status(500).send("SSR error — check server logs");
+  }
+});
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`SharpKit v2 running → http://localhost:${PORT}`));
