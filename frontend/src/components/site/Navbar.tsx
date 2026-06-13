@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Menu, Moon, Sun, X } from "lucide-react";
+import { Menu, Moon, Sun, Wallet, X } from "lucide-react";
 import { Logo } from "./Logo";
 import { useTheme } from "./theme";
 import { Button } from "@/components/ui/button";
+import { useWallet } from "@/Hooks/useWallet";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -11,10 +12,12 @@ const links = [
   { to: "/marketplace", label: "Marketplace" },
   { to: "/store", label: "Demo Store" },
   { to: "/dashboard", label: "Dashboard" },
+  { to: "/api", label: "API" },
 ] as const;
 
 export function Navbar() {
   const { theme, toggle } = useTheme();
+  const wallet = useWallet();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -67,8 +70,40 @@ export function Navbar() {
             >
               {theme === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
             </Button>
+
+            {/* Wallet connect button */}
+            {wallet.address ? (
+              <button
+                onClick={wallet.disconnect}
+                title="Click to disconnect"
+                className={cn(
+                  "hidden sm:flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm font-medium transition-colors hover:bg-secondary",
+                  !wallet.isSepolia && "border-destructive/50",
+                )}
+              >
+                <span
+                  className={cn(
+                    "h-2 w-2 rounded-full",
+                    wallet.isSepolia ? "bg-reward" : "bg-destructive",
+                  )}
+                />
+                <span className="font-mono text-xs">{wallet.shortAddress}</span>
+              </button>
+            ) : (
+              <Button
+                variant="glass"
+                size="sm"
+                className="hidden sm:inline-flex gap-1.5 rounded-xl"
+                onClick={wallet.connect}
+                disabled={wallet.connecting}
+              >
+                <Wallet className="size-4" />
+                {wallet.connecting ? "…" : "Connect"}
+              </Button>
+            )}
+
             <Button asChild variant="hero" className="hidden btn-shine sm:inline-flex">
-              <Link to="/dashboard">Start Building</Link>
+              <Link to="/api">Try API</Link>
             </Button>
             <Button
               variant="ghost"
@@ -96,8 +131,26 @@ export function Navbar() {
                 {l.label}
               </Link>
             ))}
+            {wallet.address ? (
+              <button
+                onClick={() => { wallet.disconnect(); setOpen(false); }}
+                className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                <span className={cn("h-2 w-2 rounded-full", wallet.isSepolia ? "bg-reward" : "bg-destructive")} />
+                <span className="font-mono">{wallet.shortAddress}</span>
+                <span className="ml-auto text-xs">Disconnect</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => { wallet.connect(); setOpen(false); }}
+                className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                <Wallet className="size-4" />
+                {wallet.connecting ? "Connecting…" : "Connect MetaMask"}
+              </button>
+            )}
             <Button asChild variant="hero" className="mt-1">
-              <Link to="/dashboard" onClick={() => setOpen(false)}>Start Building</Link>
+              <Link to="/api" onClick={() => setOpen(false)}>Try API</Link>
             </Button>
           </div>
         )}
